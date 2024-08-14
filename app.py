@@ -178,7 +178,7 @@ async def init_cosmosdb_client():
     if app_settings.chat_history:
         try:
             cosmos_endpoint = (
-                f"https://neuralinverse.documents.azure.com:443/"
+                f"https://{app_settings.chat_history.account}.documents.azure.com:443/"
             )
 
             if not app_settings.chat_history.account_key:
