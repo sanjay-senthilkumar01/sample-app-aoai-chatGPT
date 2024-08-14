@@ -1,13 +1,9 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
-name: Build and deploy AOAI ChatGPT app to Azure Web App
+name: Build and deploy Python app to Azure Web App - neuralinverseai
 
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -21,27 +17,26 @@ jobs:
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Specify the Python version required by the app
+          python-version: '3.11'
 
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Run migrations (if needed)
-        run: |
-          python manage.py migrate  # If your project uses Django or similar frameworks
-
-      # Optional: Add step to run tests here
+        
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip ./* -x 'venv/*'
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
-          name: aoai-chatgpt-app
-          path: |
-            release.zip
-            !venv/
+          name: python-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,13 +45,13 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write  # Required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: aoai-chatgpt-app
+          name: python-app
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
@@ -64,13 +59,13 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DCF582155F7A4EB888E9585814C45FA7 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CB18E140C4B54114B4380269892E94FF }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BB91BFE891A7470B916ECE8A99F187BB }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'neuralinversechatbotteam'  # Replace with your Azure Web App name
+          app-name: 'neuralinverseai'
           slot-name: 'Production'
